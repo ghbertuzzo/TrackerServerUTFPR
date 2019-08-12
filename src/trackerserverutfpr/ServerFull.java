@@ -18,16 +18,16 @@ import java.util.concurrent.ArrayBlockingQueue;
  */
 public class ServerFull {
     
-    public ArrayBlockingQueue listMsgs;
-    public ArrayBlockingQueue listMsgsProcessed;
+    public ArrayBlockingQueue<String> listMsgs;
+    public ArrayBlockingQueue<TrackerInterface> listMsgsProcessed;
     public ServerSocket serverSocket;
     private final int port;
     public Map<Socket, ThreadTracker> mapTrackers;     // Hash(socket|thread responsavel)
 
     public ServerFull(int port) {
         this.port = port;
-        this.listMsgs = new ArrayBlockingQueue(10000);
-        this.listMsgsProcessed = new ArrayBlockingQueue(10000);
+        this.listMsgs = new ArrayBlockingQueue<>(10000);
+        this.listMsgsProcessed = new ArrayBlockingQueue<>(10000);
         this.mapTrackers = new HashMap<>();
     }
     

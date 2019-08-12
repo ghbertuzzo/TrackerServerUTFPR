@@ -27,10 +27,10 @@ import java.util.logging.Logger;
  */
 public class processingModule extends Thread {
 
-    public ArrayBlockingQueue listMsgs;
-    public ArrayBlockingQueue listMsgsProcessed;
+    public ArrayBlockingQueue<String> listMsgs;
+    public ArrayBlockingQueue<TrackerInterface> listMsgsProcessed;
     
-    public processingModule(ArrayBlockingQueue listMsgs, ArrayBlockingQueue listMsgsProcessed) {
+    public processingModule(ArrayBlockingQueue<String> listMsgs, ArrayBlockingQueue<TrackerInterface> listMsgsProcessed) {
         this.listMsgs = listMsgs;
         this.listMsgsProcessed = listMsgsProcessed;
     }
@@ -60,11 +60,7 @@ public class processingModule extends Thread {
                 //INSERE TODAS MENSAGENS PROCESSADAS NO BANCO
                 insertMsgsProcessed(listProcessed);
 
-            } catch (SQLException ex) {
-                Logger.getLogger(processingModule.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(processingModule.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (ParseException ex) {
+            } catch (SQLException | InterruptedException | ParseException ex) {
                 Logger.getLogger(processingModule.class.getName()).log(Level.SEVERE, null, ex);
             }
         }

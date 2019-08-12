@@ -22,9 +22,9 @@ public class captureModule extends Thread {
     public ServerSocket serverSocket;
     private final int port;
     public Map<Socket, ThreadTracker> mapTrackers; 
-    public ArrayBlockingQueue listMsgs;
+    public ArrayBlockingQueue<String> listMsgs;
     
-    public captureModule(int port, ServerSocket serverSocket, Map<Socket, ThreadTracker> mapTrackers, ArrayBlockingQueue listMsgs) {
+    public captureModule(int port, ServerSocket serverSocket, Map<Socket, ThreadTracker> mapTrackers, ArrayBlockingQueue<String> listMsgs) {
         this.port = port;
         this.serverSocket = serverSocket;
         this.mapTrackers = mapTrackers;
@@ -39,14 +39,14 @@ public class captureModule extends Thread {
             Logger.getLogger(captureModule.class.getName()).log(Level.SEVERE, null, ex);
         }
         System.out.println("Starting the socket server at port:" + port);
-        while (true) {
-            Socket client = null;
+        Socket client = null;  
+        while (true) {          
             try {
                 client = this.serverSocket.accept();
-                System.out.println("New Client");
             } catch (IOException ex) {
                 Logger.getLogger(captureModule.class.getName()).log(Level.SEVERE, null, ex);
             }
+            System.out.println("New Client");
             ThreadTracker tracker;
             if (!this.mapTrackers.containsKey(client)) {
                 tracker = new ThreadTracker(client, this.listMsgs);

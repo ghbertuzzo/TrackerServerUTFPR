@@ -13,31 +13,30 @@ import java.util.logging.Logger;
 public class ThreadTracker implements Runnable {
 
     private final Socket client;
-    public ArrayBlockingQueue refSharedList;
+    public ArrayBlockingQueue<String> refSharedList;
 
-    public ThreadTracker(Socket client, ArrayBlockingQueue refSharedList) {
+    public ThreadTracker(Socket client, ArrayBlockingQueue<String> refSharedList) {
         this.client = client;
         this.refSharedList = refSharedList;
     }
 
     @Override
     public void run() {
-        while (true) {
-            Scanner entrada = null;
+        Scanner entrada = null;
+        try {
+            entrada = new Scanner(this.client.getInputStream());
+        } catch (IOException ex) {
+            Logger.getLogger(ThreadTracker.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        while (entrada.hasNextLine()) {
+            String msg = entrada.nextLine();
+            System.out.println(msg);
             try {
-                entrada = new Scanner(this.client.getInputStream());
-            } catch (IOException ex) {
+                this.refSharedList.put(msg);
+            } catch (InterruptedException ex) {
                 Logger.getLogger(ThreadTracker.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            while (entrada.hasNextLine()) {
-                String msg = entrada.nextLine();
-                System.out.println(msg);
-                try {
-                    this.refSharedList.put(msg);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(ThreadTracker.class.getName()).log(Level.SEVERE, null, ex);
-                }
             }
         }
     }
+    
 }
