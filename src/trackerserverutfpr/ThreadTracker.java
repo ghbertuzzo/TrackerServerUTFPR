@@ -22,19 +22,21 @@ public class ThreadTracker implements Runnable {
 
     @Override
     public void run() {
-        Scanner entrada = null;
-        try {
-            entrada = new Scanner(this.client.getInputStream());
-        } catch (IOException ex) {
-            Logger.getLogger(ThreadTracker.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        while (entrada.hasNextLine()) {
-            String msg = entrada.nextLine();
-            System.out.println(msg);
+        while (true) {
+            Scanner entrada = null;
             try {
-                this.refSharedList.put(msg);
-            } catch (InterruptedException ex) {
+                entrada = new Scanner(this.client.getInputStream());
+            } catch (IOException ex) {
                 Logger.getLogger(ThreadTracker.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            while (entrada.hasNextLine()) {
+                String msg = entrada.nextLine();
+                System.out.println(msg);
+                try {
+                    this.refSharedList.put(msg);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(ThreadTracker.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         }
     }

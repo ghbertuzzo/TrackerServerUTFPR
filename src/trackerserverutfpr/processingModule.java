@@ -37,33 +37,29 @@ public class processingModule extends Thread {
     
     @Override
     public void run() {
-        while(true){
-            
+        while (true) {
+
             //REMOVE TODAS MENSAGENS DO ARRAY COMPARTILHADO
             ArrayList<String> list = removeMsgs();
-            System.out.println("Size list not processed: "+list.size());
             try {
-                
-                //INSERE TODAS MENSAGENS SEM PROCESSAR NO BANCO
+
+                //INSERE TODAS MENSAGENS SEM PROCESSAR NO BANCO                
                 insertMsgs(list);
-                System.out.println("Added all message not processed in database");
-                
+                //System.out.println("Added all message not processed in database");
+
                 //CRIA POOL DE THREADS PARA PROCESSAR
                 ExecutorService es = createThreads(list);
-                System.out.println("Created pool of threads for process messages");
-                
-                //ESPERA N SEGUNDOS, OU O POOL DE THREADS TERMINAR
-                waitToProcess(es);
-                System.out.println("Killed pool of threads");
-                
+                if (es != null) {
+                    //ESPERA POOL DE THREADS TERMINAR
+                    waitToProcess(es);
+                }
+
                 //REMOVE TODAS MENSAGENS PROCESSADAS DO ARRAY COMPARTILHADO
                 ArrayList<TrackerInterface> listProcessed = removeMsgsProcessed();
-                System.out.println("Size list msgs processed: "+listProcessed.size());
-                
+
                 //INSERE TODAS MENSAGENS PROCESSADAS NO BANCO
                 insertMsgsProcessed(listProcessed);
-                System.out.println("Added all message processed in database");
-                
+
             } catch (SQLException ex) {
                 Logger.getLogger(processingModule.class.getName()).log(Level.SEVERE, null, ex);
             } catch (InterruptedException ex) {
@@ -74,44 +70,54 @@ public class processingModule extends Thread {
         }
     }
     
-    private ArrayList<String> removeMsgs(){
+    private ArrayList<String> removeMsgs() {
         ArrayList<String> list = new ArrayList<>();
         this.listMsgs.drainTo(list);
         return list;
     }
     
-    private void insertMsgs(ArrayList<String> list) throws SQLException{
-        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://172.17.0.3:5432/", "postgres", "utfsenha")) {
-            connection.setAutoCommit(false);
-            PreparedStatement ps = connection.prepareStatement("INSERT INTO message_received (content, processed) VALUES (?, ?)");
-            for (String msgs: list) {
-                ps.setString(1, msgs);
-                ps.setBoolean(2, false);
-                ps.addBatch();
+    private void insertMsgs(ArrayList<String> list) throws SQLException {
+        if (!list.isEmpty()) {
+            System.out.println("Size list not processed: " + list.size());
+            try (Connection connection = DriverManager.getConnection("jdbc:postgresql://172.17.0.3:5432/", "postgres", "utfsenha")) {
+                connection.setAutoCommit(false);
+                PreparedStatement ps = connection.prepareStatement("INSERT INTO message_received (content, processed) VALUES (?, ?)");
+                for (String msgs : list) {
+                    ps.setString(1, msgs);
+                    ps.setBoolean(2, false);
+                    ps.addBatch();
+                }
+                ps.executeBatch();
+                connection.commit();
             }
-            ps.executeBatch();
-            connection.commit();
         }
     }
     
-    private ExecutorService createThreads(ArrayList<String> list){
-        ArrayList<TrackerST300> tarefas = new ArrayList<>();
-        list.forEach((msg) -> {
-            TrackerST300 tracker = new TrackerST300(msg, listMsgsProcessed);
-            tarefas.add(tracker);
-        });
-        ExecutorService threadPool = Executors.newFixedThreadPool(4);
-        tarefas.forEach((tarefa) -> {
-            threadPool.execute(tarefa);
-        });
-        return threadPool;
+    private ExecutorService createThreads(ArrayList<String> list) {
+        if (!list.isEmpty()) {
+            System.out.println("Created pool of threads for process messages");
+            ArrayList<TrackerST300> tarefas = new ArrayList<>();
+            list.forEach((msg) -> {
+                TrackerST300 tracker = new TrackerST300(msg, listMsgsProcessed);
+                tarefas.add(tracker);
+            });
+            //ExecutorService threadPool = Executors.newFixedThreadPool(4);
+            ExecutorService threadPool = Executors.newCachedThreadPool();
+            tarefas.forEach((tarefa) -> {
+                threadPool.execute(tarefa);
+            });
+            return threadPool;
+        } else {
+            return null;
+        }
     }
     
     private void waitToProcess(ExecutorService es) throws InterruptedException {
-        if(es.awaitTermination(10, TimeUnit.SECONDS)){
+        if (es.isTerminated()) {
             System.out.println("Processed all tasks");
         }
         es.shutdown();
+        System.out.println("Killed pool of threads");
     }
     
     private ArrayList<TrackerInterface> removeMsgsProcessed() {
@@ -120,26 +126,29 @@ public class processingModule extends Thread {
         return listForProcessed;
     }
     
-    private void insertMsgsProcessed(ArrayList<TrackerInterface> list) throws SQLException, ParseException{
-        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://172.17.0.3:5432/", "postgres", "utfsenha")) {
-            connection.setAutoCommit(false);
-            PreparedStatement ps = connection.prepareStatement("INSERT INTO message_processed (tracker_id, time, latitude, longitude) VALUES (?, ?, ?, ?)");
-            for (TrackerInterface tracker : list) {
-                Calendar c = Calendar.getInstance();
-                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-                c.setTime(format.parse(tracker.getDateTime()));
-                Timestamp stamp = new Timestamp(c.getTimeInMillis());
+    private void insertMsgsProcessed(ArrayList<TrackerInterface> list) throws SQLException, ParseException {
+        if (!list.isEmpty()) {
+            System.out.println("Size list msgs processed: " + list.size());
+            try (Connection connection = DriverManager.getConnection("jdbc:postgresql://172.17.0.3:5432/", "postgres", "utfsenha")) {
+                connection.setAutoCommit(false);
+                PreparedStatement ps = connection.prepareStatement("INSERT INTO message_processed (tracker_id, time, latitude, longitude) VALUES (?, ?, ?, ?)");
+                for (TrackerInterface tracker : list) {
+                    Calendar c = Calendar.getInstance();
+                    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+                    c.setTime(format.parse(tracker.getDateTime()));
+                    Timestamp stamp = new Timestamp(c.getTimeInMillis());
 
-                ps.setString(1, tracker.getIdTracker());
-                ps.setTimestamp(2, stamp);
-                ps.setString(3, tracker.getLatitude());
-                ps.setString(4, tracker.getLongitude());
-                ps.addBatch();
+                    ps.setString(1, tracker.getIdTracker());
+                    ps.setTimestamp(2, stamp);
+                    ps.setString(3, tracker.getLatitude());
+                    ps.setString(4, tracker.getLongitude());
+                    ps.addBatch();
+                }
+                ps.executeBatch();
+                connection.commit();
             }
-            ps.executeBatch();
-            connection.commit();
+            System.out.println("Added all message processed in database");
         }
-
     }
 
 

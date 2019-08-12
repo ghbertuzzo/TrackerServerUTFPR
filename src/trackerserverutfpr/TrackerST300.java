@@ -112,6 +112,20 @@ public class TrackerST300 implements TrackerInterface, Runnable {
                     this.distance = msgparsed[13]; // in m
                     processed = true;
                     break;
+                case "ST300EVT":
+                    //TIPO DE MENSAGEM DE EVT
+                    //ST300EVT;907036105;04;706;20190409;00:22:00;56e425;-24.049020;-052.395404;
+                    //000.011;000.00;10;1;27023573;0.00;000000;3;101149;4.3;0;0;00000000000000;0
+                    this.idtracker = msgparsed[1];
+                    this.modelDevice = msgparsed[2];
+                    this.softwareVersion = msgparsed[3];
+                    this.datetime = processDateTime(msgparsed[4], msgparsed[5]);
+                    this.latitude = msgparsed[7];
+                    this.longitude = msgparsed[8];
+                    //this.speed = msgparsed[9]; // in km/h
+                    //this.distance = msgparsed[13]; // in m
+                    processed = true;
+                    break;
                 case "ST300ALT":
                     //TIPO DE MENSAGEM DE ALT
                     //ST300ALT;907036105;04;706;20190410;16:54:56;56e440;-24.051715;-052.404470;
@@ -126,6 +140,18 @@ public class TrackerST300 implements TrackerInterface, Runnable {
                     this.distance = msgparsed[13]; // in m
                     processed = true;
                     break;
+                case "ST300HTE":
+                    //TIPO DE MENSAGEM DE HTE - TRAVEL EVENT
+                    this.idtracker = msgparsed[1];
+                    this.modelDevice = msgparsed[2];
+                    this.softwareVersion = msgparsed[3];
+                    this.datetime = processDateTime(msgparsed[4], msgparsed[5]);
+                    //this.latitude = msgparsed[7];
+                    //this.longitude = msgparsed[8];
+                    //this.speed = msgparsed[9]; // in km/h
+                    //this.distance = msgparsed[13]; // in m
+                    processed = false;
+                    break;
                 case "ST300ALV":
                     //TIPO DE MENSAGEM DE ALV - keep alive
                     //ST300ALV;907036105
@@ -133,7 +159,27 @@ public class TrackerST300 implements TrackerInterface, Runnable {
                     this.datetime = null;
                     this.latitude = null;
                     this.longitude = null;
+                    processed = false;
+                    break;
+                case "ST300UEX":
+                    //TIPO DE MENSAGEM DE UEX
+                    this.idtracker = msgparsed[1];
+                    this.modelDevice = msgparsed[2];
+                    this.softwareVersion = msgparsed[3];
+                    this.datetime = processDateTime(msgparsed[4], msgparsed[5]);
+                    this.latitude = msgparsed[7];
+                    this.longitude = msgparsed[8];
+                    //this.speed = msgparsed[9]; // in km/h
+                    //this.distance = msgparsed[13]; // in m
                     processed = true;
+                    break;
+                case "ST300CMD":
+                    //TIPO DE MENSAGEM DE CMD
+                    this.idtracker = msgparsed[1];
+                    this.datetime = null;
+                    this.latitude = null;
+                    this.longitude = null;
+                    processed = false;
                     break;
                 default:
                     break;

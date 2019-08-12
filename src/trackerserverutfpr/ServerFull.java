@@ -26,8 +26,8 @@ public class ServerFull {
 
     public ServerFull(int port) {
         this.port = port;
-        this.listMsgs = new ArrayBlockingQueue(127000);
-        this.listMsgsProcessed = new ArrayBlockingQueue(127000);
+        this.listMsgs = new ArrayBlockingQueue(10000);
+        this.listMsgsProcessed = new ArrayBlockingQueue(10000);
         this.mapTrackers = new HashMap<>();
     }
     
