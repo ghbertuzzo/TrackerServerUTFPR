@@ -24,7 +24,7 @@ import java.util.logging.Logger;
  *
  * @author giova
  */
-public class processingModule extends Thread {
+public class processingModule implements Runnable {
 
     public ArrayBlockingQueue<String> listMsgs;
     public ArrayBlockingQueue<TrackerInterface> listMsgsProcessed;

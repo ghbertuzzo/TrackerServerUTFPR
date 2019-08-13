@@ -35,7 +35,7 @@ public class ServerFull {
         captureModule capModule = new captureModule(this.port, this.serverSocket, this.mapTrackers, this.listMsgs);
         capModule.run();
         processingModule procModule = new processingModule(this.listMsgs, this.listMsgsProcessed);
-        procModule.start();
+        procModule.run();
     }
     
     
