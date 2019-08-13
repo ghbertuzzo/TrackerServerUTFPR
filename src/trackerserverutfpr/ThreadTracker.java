@@ -34,11 +34,9 @@ public class ThreadTracker implements Runnable {
             try {
                 this.refSharedList.put(msg);
             } catch (InterruptedException ex) {
-                System.out.println("Enter Catch Exception for put msg in ref shared list");
                 Logger.getLogger(ThreadTracker.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        System.out.println("Exited while stream");
     }
     
 }

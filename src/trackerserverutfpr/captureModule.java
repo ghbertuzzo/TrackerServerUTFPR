@@ -17,7 +17,7 @@ import java.util.logging.Logger;
  *
  * @author giova
  */
-public class captureModule {
+public class captureModule implements Runnable {
 
     public ServerSocket serverSocket;
     private final int port;
@@ -31,16 +31,27 @@ public class captureModule {
         this.listMsgs = listMsgs;
     }
 
-    public void start() throws IOException {
+    @Override
+    public void run() {
+        try {        
+            this.serverSocket = new ServerSocket(port);
+        } catch (IOException ex) {
+            Logger.getLogger(captureModule.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        System.out.println("Starting the socket server at port:" + port);
         Socket client = null;  
         while (true) {         
-            client = this.serverSocket.accept();            
+            try {            
+                client = this.serverSocket.accept();
+            } catch (IOException ex) {
+                Logger.getLogger(captureModule.class.getName()).log(Level.SEVERE, null, ex);
+            }
             System.out.println("New Client");
-            ThreadTracker tracker;
+            Thread thread = null;
             if (!this.mapTrackers.containsKey(client)) {
-                System.out.println("Create New Thread");
-                tracker = new ThreadTracker(client, this.listMsgs);
-                tracker.run();
+                ThreadTracker tracker = new ThreadTracker(client, this.listMsgs);                
+                thread = new Thread(tracker);
+                thread.start();
                 this.mapTrackers.put(client, tracker);
             }
         }
