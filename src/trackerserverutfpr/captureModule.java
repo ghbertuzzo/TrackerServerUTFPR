@@ -32,14 +32,13 @@ public class captureModule {
     }
 
     public void start() throws IOException {
-        this.serverSocket = new ServerSocket(port);        
-        System.out.println("Starting the socket server at port:" + port);
         Socket client = null;  
         while (true) {         
             client = this.serverSocket.accept();            
             System.out.println("New Client");
             ThreadTracker tracker;
             if (!this.mapTrackers.containsKey(client)) {
+                System.out.println("Create New Thread");
                 tracker = new ThreadTracker(client, this.listMsgs);
                 tracker.run();
                 this.mapTrackers.put(client, tracker);

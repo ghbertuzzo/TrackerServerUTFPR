@@ -24,11 +24,13 @@ public class ServerFull {
     private final int port;
     public Map<Socket, ThreadTracker> mapTrackers;     // Hash(socket|thread responsavel)
 
-    public ServerFull(int port) {
+    public ServerFull(int port) throws IOException {
         this.port = port;
-        this.listMsgs = new ArrayBlockingQueue<>(10000);
-        this.listMsgsProcessed = new ArrayBlockingQueue<>(10000);
+        this.listMsgs = new ArrayBlockingQueue<>(1000);
+        this.listMsgsProcessed = new ArrayBlockingQueue<>(1000);
         this.mapTrackers = new HashMap<>();
+        this.serverSocket = new ServerSocket(port);        
+        System.out.println("Starting the socket server at port:" + port);
     }
     
     public void start() throws IOException{
