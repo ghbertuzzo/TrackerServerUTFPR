@@ -17,7 +17,7 @@ import java.util.logging.Logger;
  *
  * @author giova
  */
-public class captureModule extends Thread {
+public class captureModule implements Runnable {
 
     public ServerSocket serverSocket;
     private final int port;

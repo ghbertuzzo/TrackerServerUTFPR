@@ -59,11 +59,16 @@ public class processingModule extends Thread {
 
                 //INSERE TODAS MENSAGENS PROCESSADAS NO BANCO
                 insertMsgsProcessed(listProcessed);
-
+                
+                //ESPERA 10 SEG PARA REPETIR O CICLO
+                sleep(10000);
             } catch (SQLException | InterruptedException | ParseException ex) {
                 Logger.getLogger(processingModule.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+    }
+    private void sleep(int n) throws InterruptedException{
+        Thread.sleep(n);
     }
     
     private ArrayList<String> removeMsgs() {
@@ -97,8 +102,8 @@ public class processingModule extends Thread {
                 TrackerST300 tracker = new TrackerST300(msg, listMsgsProcessed);
                 tarefas.add(tracker);
             });
-            //ExecutorService threadPool = Executors.newFixedThreadPool(4);
-            ExecutorService threadPool = Executors.newCachedThreadPool();
+            ExecutorService threadPool = Executors.newFixedThreadPool(2);
+            //ExecutorService threadPool = Executors.newCachedThreadPool();
             tarefas.forEach((tarefa) -> {
                 threadPool.execute(tarefa);
             });
