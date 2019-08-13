@@ -33,7 +33,7 @@ public class ServerFull {
     
     public void start() throws IOException{
         captureModule capModule = new captureModule(this.port, this.serverSocket, this.mapTrackers, this.listMsgs);
-        capModule.run();
+        capModule.start();
         processingModule procModule = new processingModule(this.listMsgs, this.listMsgsProcessed);
         procModule.run();
     }
