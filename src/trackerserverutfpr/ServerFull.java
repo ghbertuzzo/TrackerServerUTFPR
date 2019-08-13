@@ -32,10 +32,16 @@ public class ServerFull {
     }
     
     public void start() throws IOException{
+        Thread threadCapModule = null;
+        Thread threadProcModule = null;
+        
         captureModule capModule = new captureModule(this.port, this.serverSocket, this.mapTrackers, this.listMsgs);
-        capModule.run();
+        threadCapModule = new Thread(capModule);
+        threadCapModule.start();
+        
         processingModule procModule = new processingModule(this.listMsgs, this.listMsgsProcessed);
-        procModule.run();
+        threadProcModule = new Thread(procModule);
+        threadProcModule.start();
     }
     
     
