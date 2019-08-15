@@ -17,6 +17,7 @@ import java.util.Calendar;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -49,7 +50,7 @@ public class ProcessingModule implements Runnable {
                 //CRIA POOL DE THREADS PARA PROCESSAR
                 ExecutorService es = createThreads(list);
                 if (es != null) {
-                    //ESPERA POOL DE THREADS TERMINAR
+                    //ESPERA POOL DE THREADS TERMINAR, APOS 10 SEGUNDOS EH INTERROMPIDO CASO NAO TERMINE DE PROCESSAR TUDO
                     waitToProcess(es);
                 }
 
@@ -101,8 +102,8 @@ public class ProcessingModule implements Runnable {
                 TrackerST300 tracker = new TrackerST300(msg, listMsgsProcessed);
                 tarefas.add(tracker);
             });
-            //ExecutorService threadPool = Executors.newFixedThreadPool(2);
-            ExecutorService threadPool = Executors.newCachedThreadPool();
+            ExecutorService threadPool = Executors.newFixedThreadPool(4);
+            //ExecutorService threadPool = Executors.newCachedThreadPool();
             tarefas.forEach((tarefa) -> {
                 threadPool.execute(tarefa);
             });
@@ -113,14 +114,13 @@ public class ProcessingModule implements Runnable {
     }
     
     private void waitToProcess(ExecutorService es) throws InterruptedException {
-        if (es.isTerminated()) {
-            System.out.println("Pool is Terminated");
+        if(!es.awaitTermination(10, TimeUnit.SECONDS)) {
+            es.shutdownNow();
+            System.out.println("Not processed all messages!!!");
+        }else{
+            System.out.println("Processed all messages in pool!!!");
+            es.shutdown();
         }
-        if (es.isShutdown()) {
-            System.out.println("Pool is Shutdown");
-        }
-        es.shutdown();
-        //System.out.println("Killed pool of threads");
     }
     
     private ArrayList<TrackerInterface> removeMsgsProcessed() {
