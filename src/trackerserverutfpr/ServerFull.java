@@ -26,8 +26,8 @@ public class ServerFull {
 
     public ServerFull(int port) throws IOException {
         this.port = port;
-        this.listMsgs = new ArrayBlockingQueue<>(1000);
-        this.listMsgsProcessed = new ArrayBlockingQueue<>(1000);
+        this.listMsgs = new ArrayBlockingQueue<>(100000);
+        this.listMsgsProcessed = new ArrayBlockingQueue<>(100000);
         this.mapTrackers = new HashMap<>();
     }
     
@@ -35,11 +35,11 @@ public class ServerFull {
         Thread threadCapModule = null;
         Thread threadProcModule = null;
         
-        captureModule capModule = new captureModule(this.port, this.serverSocket, this.mapTrackers, this.listMsgs);
+        CaptureModule capModule = new CaptureModule(this.port, this.serverSocket, this.mapTrackers, this.listMsgs);
         threadCapModule = new Thread(capModule);
         threadCapModule.start();
         
-        processingModule procModule = new processingModule(this.listMsgs, this.listMsgsProcessed);
+        ProcessingModule procModule = new ProcessingModule(this.listMsgs, this.listMsgsProcessed);
         threadProcModule = new Thread(procModule);
         threadProcModule.start();
     }

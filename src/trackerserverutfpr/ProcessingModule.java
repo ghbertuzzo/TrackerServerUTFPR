@@ -24,12 +24,12 @@ import java.util.logging.Logger;
  *
  * @author giova
  */
-public class processingModule implements Runnable {
+public class ProcessingModule implements Runnable {
 
     public ArrayBlockingQueue<String> listMsgs;
     public ArrayBlockingQueue<TrackerInterface> listMsgsProcessed;
     
-    public processingModule(ArrayBlockingQueue<String> listMsgs, ArrayBlockingQueue<TrackerInterface> listMsgsProcessed) {
+    public ProcessingModule(ArrayBlockingQueue<String> listMsgs, ArrayBlockingQueue<TrackerInterface> listMsgsProcessed) {
         this.listMsgs = listMsgs;
         this.listMsgsProcessed = listMsgsProcessed;
     }
@@ -62,7 +62,7 @@ public class processingModule implements Runnable {
                 //ESPERA 10 SEG PARA REPETIR O CICLO
                 sleep(10000);
             } catch (SQLException | InterruptedException | ParseException ex) {
-                Logger.getLogger(processingModule.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ProcessingModule.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -95,14 +95,14 @@ public class processingModule implements Runnable {
     
     private ExecutorService createThreads(ArrayList<String> list) {
         if (!list.isEmpty()) {
-            System.out.println("Created pool of threads for process messages");
+            //System.out.println("Created pool of threads for process messages");
             ArrayList<TrackerST300> tarefas = new ArrayList<>();
             list.forEach((msg) -> {
                 TrackerST300 tracker = new TrackerST300(msg, listMsgsProcessed);
                 tarefas.add(tracker);
             });
-            ExecutorService threadPool = Executors.newFixedThreadPool(2);
-            //ExecutorService threadPool = Executors.newCachedThreadPool();
+            //ExecutorService threadPool = Executors.newFixedThreadPool(2);
+            ExecutorService threadPool = Executors.newCachedThreadPool();
             tarefas.forEach((tarefa) -> {
                 threadPool.execute(tarefa);
             });
@@ -114,10 +114,13 @@ public class processingModule implements Runnable {
     
     private void waitToProcess(ExecutorService es) throws InterruptedException {
         if (es.isTerminated()) {
-            System.out.println("Processed all tasks");
+            System.out.println("Pool is Terminated");
+        }
+        if (es.isShutdown()) {
+            System.out.println("Pool is Shutdown");
         }
         es.shutdown();
-        System.out.println("Killed pool of threads");
+        //System.out.println("Killed pool of threads");
     }
     
     private ArrayList<TrackerInterface> removeMsgsProcessed() {

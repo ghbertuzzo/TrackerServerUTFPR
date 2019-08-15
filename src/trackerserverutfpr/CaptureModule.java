@@ -17,14 +17,14 @@ import java.util.logging.Logger;
  *
  * @author giova
  */
-public class captureModule implements Runnable {
+public class CaptureModule implements Runnable {
 
     public ServerSocket serverSocket;
     private final int port;
     public Map<Socket, ThreadTracker> mapTrackers; 
     public ArrayBlockingQueue<String> listMsgs;
     
-    public captureModule(int port, ServerSocket serverSocket, Map<Socket, ThreadTracker> mapTrackers, ArrayBlockingQueue<String> listMsgs) {
+    public CaptureModule(int port, ServerSocket serverSocket, Map<Socket, ThreadTracker> mapTrackers, ArrayBlockingQueue<String> listMsgs) {
         this.port = port;
         this.serverSocket = serverSocket;
         this.mapTrackers = mapTrackers;
@@ -36,7 +36,7 @@ public class captureModule implements Runnable {
         try {        
             this.serverSocket = new ServerSocket(port);
         } catch (IOException ex) {
-            Logger.getLogger(captureModule.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(CaptureModule.class.getName()).log(Level.SEVERE, null, ex);
         }
         System.out.println("Starting the socket server at port:" + port);
         Socket client = null;  
@@ -44,9 +44,9 @@ public class captureModule implements Runnable {
             try {            
                 client = this.serverSocket.accept();
             } catch (IOException ex) {
-                Logger.getLogger(captureModule.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(CaptureModule.class.getName()).log(Level.SEVERE, null, ex);
             }
-            System.out.println("New Client");
+            //System.out.println("New Client");
             Thread thread = null;
             if (!this.mapTrackers.containsKey(client)) {
                 ThreadTracker tracker = new ThreadTracker(client, this.listMsgs);                

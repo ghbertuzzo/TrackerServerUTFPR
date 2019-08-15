@@ -30,7 +30,7 @@ public class ThreadTracker implements Runnable {
         }
         while (entrada.hasNextLine()) {
             String msg = entrada.nextLine();
-            System.out.println(msg);
+            //System.out.println(msg);
             try {
                 this.refSharedList.put(msg);
             } catch (InterruptedException ex) {
