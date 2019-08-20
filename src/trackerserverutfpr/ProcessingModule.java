@@ -114,7 +114,7 @@ public class ProcessingModule implements Runnable {
     }
     
     private void waitToProcess(ExecutorService es) throws InterruptedException {
-        if(!es.awaitTermination(10, TimeUnit.SECONDS)) {
+        if(es.awaitTermination(10, TimeUnit.SECONDS)) {
             es.shutdownNow();
             System.out.println("Not processed all messages!!!");
         }else{
