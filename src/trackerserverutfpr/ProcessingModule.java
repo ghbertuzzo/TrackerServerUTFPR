@@ -67,38 +67,8 @@ public class ProcessingModule implements Runnable {
         }
     }
     
-<<<<<<< HEAD
     private void sleep(int n) throws InterruptedException{
         Thread.sleep(n);
-=======
-    private ExecutorService createThreads(ArrayList<String> list) {
-        if (!list.isEmpty()) {
-            //System.out.println("Created pool of threads for process messages");
-            ArrayList<TrackerST300> tarefas = new ArrayList<>();
-            list.forEach((msg) -> {
-                TrackerST300 tracker = new TrackerST300(msg, listMsgsProcessed);
-                tarefas.add(tracker);
-            });
-            ExecutorService threadPool = Executors.newFixedThreadPool(4);
-            //ExecutorService threadPool = Executors.newCachedThreadPool();
-            tarefas.forEach((tarefa) -> {
-                threadPool.execute(tarefa);
-            });
-            return threadPool;
-        } else {
-            return null;
-        }
-    }
-    
-    private void waitToProcess(ExecutorService es) throws InterruptedException {
-        if(es.awaitTermination(10, TimeUnit.SECONDS)) {
-            es.shutdownNow();
-            System.out.println("Not processed all messages!!!");
-        }else{
-            System.out.println("Processed all messages in pool!!!");
-            es.shutdown();
-        }
->>>>>>> ab1f2f065684aba969d78ae3d24a6972999d8418
     }
     
     private ArrayList<TrackerInterface> removeMsgsProcessed() {
