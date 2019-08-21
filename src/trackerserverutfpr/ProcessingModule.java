@@ -85,7 +85,7 @@ public class ProcessingModule implements Runnable {
             while (rs.next()){
                 String id = rs.getString("number_id");
                 String content = rs.getString("content");
-                TrackerST300 track = new TrackerST300(id, listMsgsProcessed, content);
+                TrackerST300 track = new TrackerST300(content, listMsgsProcessed, id);
                 list.add(track);
             }
             rs.close();
