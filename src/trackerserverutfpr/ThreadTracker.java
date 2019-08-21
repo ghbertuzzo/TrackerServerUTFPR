@@ -7,9 +7,6 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * @author Giovani Bertuzzo github.com/ghbertuzzo
- */
 public class ThreadTracker implements Runnable {
 
     private final Socket client;

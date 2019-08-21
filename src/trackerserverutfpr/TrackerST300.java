@@ -4,9 +4,6 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * @author Giovani Bertuzzo github.com/ghbertuzzo
- */
 public class TrackerST300 implements TrackerInterface, Runnable {
 
     public ArrayBlockingQueue<TrackerInterface> msgsProcessed;
@@ -19,17 +16,20 @@ public class TrackerST300 implements TrackerInterface, Runnable {
     private String softwareVersion;
     private String speed;
     private String distance;
+    private String idDB;
 
-    public TrackerST300(String msg, ArrayBlockingQueue<TrackerInterface> msgsProcessed) {
+    public TrackerST300(String msg, ArrayBlockingQueue<TrackerInterface> msgsProcessed, String id) {
         this.msgcomplet = msg;
         this.msgsProcessed = msgsProcessed;
+        this.idDB = id;
     }
 
-    public TrackerST300(String idTracker, String dateTime, String latitu, String longitu) {
+    public TrackerST300(String idTracker, String dateTime, String latitu, String longitu, String idDB) {
         this.idtracker = idTracker;
         this.datetime = dateTime;
         this.latitude = latitu;
         this.longitude = longitu;
+        this.idDB = idDB;
     }
 
     @Override
@@ -67,6 +67,19 @@ public class TrackerST300 implements TrackerInterface, Runnable {
     public String getDistance() {
         return this.distance;
     }
+    
+    public String getIdDB() {
+        return this.idDB;
+    }
+
+    public String getMsgcomplet() {
+        return msgcomplet;
+    }
+
+    public void setMsgcomplet(String msgcomplet) {
+        this.msgcomplet = msgcomplet;
+    }
+    
 
     public static String processDateTime(String date, String time) {
         //;20190219;18:13:23;
@@ -186,7 +199,7 @@ public class TrackerST300 implements TrackerInterface, Runnable {
             }
         }
         if (processed) {
-            TrackerST300 tracker = new TrackerST300(this.idtracker, this.datetime, this.latitude, this.longitude);
+            TrackerST300 tracker = new TrackerST300(this.idtracker, this.datetime, this.latitude, this.longitude, this.idDB);
             try {                
                 this.msgsProcessed.put(tracker);
             } catch (InterruptedException ex) {
