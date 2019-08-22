@@ -19,7 +19,6 @@ public class CaptureModuleInsertDB implements Runnable {
     
     @Override
     public void run() {
-        System.out.println("Start Thread Capture Module Insert DB");
         while(true){
             if(!this.listMsgs.isEmpty()){
                 ArrayList<String> array = removeMsgs();

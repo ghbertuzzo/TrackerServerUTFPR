@@ -58,9 +58,9 @@ public class ProcessingModule implements Runnable {
                 Logger.getLogger(ProcessingModule.class.getName()).log(Level.SEVERE, null, ex);
             }
             
-            //ESPERA 5 SEG PARA REPETIR O CICLO
+            //ESPERA 1 SEG PARA REPETIR O CICLO
             try {
-                sleep(5000);
+                sleep(1000);
             } catch (InterruptedException ex) {
                 Logger.getLogger(ProcessingModule.class.getName()).log(Level.SEVERE, null, ex);
             }
