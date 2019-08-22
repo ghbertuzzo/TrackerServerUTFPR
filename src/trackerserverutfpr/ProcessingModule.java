@@ -35,7 +35,7 @@ public class ProcessingModule implements Runnable {
                 threadPool = new Thread(pool);
                 threadPool.start();
                 try {
-                    threadPool.join();
+                    threadPool.join();  //AGUARDA PROCESSAR TUDO... SE RETIRAR O JOIN ENCAVALA...
                 } catch (InterruptedException ex) {
                     Logger.getLogger(ProcessingModule.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -120,20 +120,20 @@ public class ProcessingModule implements Runnable {
             System.out.println("Added all message processed in database");
         }
     }
-
+    
     private void updateMsgsProcessed(ArrayList<TrackerST300> list) throws SQLException {
-        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://172.17.0.3:5432/", "postgres", "utfsenha")) {
-            connection.setAutoCommit(false);
-            PreparedStatement ps = connection.prepareStatement("UPDATE message_received set processed=true where number_id=?");
-            for (TrackerST300 tracker : list) {
-                ps.setInt(1, Integer.parseInt(tracker.getIdDB()));
-                ps.addBatch();
+        if(!list.isEmpty()){
+            try (Connection connection = DriverManager.getConnection("jdbc:postgresql://172.17.0.3:5432/", "postgres", "utfsenha")) {
+                connection.setAutoCommit(false);
+                PreparedStatement ps = connection.prepareStatement("UPDATE message_received set processed=true where number_id=?");
+                for (TrackerST300 tracker : list) {
+                    ps.setInt(1, Integer.parseInt(tracker.getIdDB()));
+                    ps.addBatch();
+                }
+                ps.executeBatch();
+                connection.commit();
             }
-            ps.executeBatch();
-            connection.commit();
-        }
-        System.out.println("Updated all msg processed");
+            System.out.println("Updated all msg processed");
+        }        
     }
-
-
 }
