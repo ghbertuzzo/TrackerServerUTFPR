@@ -126,7 +126,7 @@ public class ProcessingModule implements Runnable {
             connection.setAutoCommit(false);
             PreparedStatement ps = connection.prepareStatement("UPDATE message_received set processed=true where number_id=?");
             for (TrackerST300 tracker : list) {
-                ps.setString(1, tracker.getIdDB());
+                ps.setInt(1, Integer.parseInt(tracker.getIdDB()));
                 ps.addBatch();
             }
             ps.executeBatch();
