@@ -12,9 +12,11 @@ import java.util.logging.Logger;
 public class CaptureModuleInsertDB implements Runnable {
     
     public ArrayBlockingQueue<String> listMsgs;
+    public int timeSleep;
 
-    public CaptureModuleInsertDB(ArrayBlockingQueue<String> listMsgs) {
+    public CaptureModuleInsertDB(ArrayBlockingQueue<String> listMsgs, int timesl) {
         this.listMsgs = listMsgs;
+        this.timeSleep = timesl;
     }
     
     @Override
@@ -29,7 +31,7 @@ public class CaptureModuleInsertDB implements Runnable {
                 }
             }
             try {
-                sleep(1000);
+                sleep(1000*this.timeSleep);
             } catch (InterruptedException ex) {
                 Logger.getLogger(CaptureModuleInsertDB.class.getName()).log(Level.SEVERE, null, ex);
             }

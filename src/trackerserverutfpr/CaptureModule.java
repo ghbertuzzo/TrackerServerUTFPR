@@ -15,11 +15,13 @@ public class CaptureModule implements Runnable {
     private final int port;
     public ExecutorService threadPool;
     public ArrayBlockingQueue<String> listMsgs;
+    public int timeSleep;
     
-    public CaptureModule(int port) {
+    public CaptureModule(int port, int timesl) {
         this.port = port;
         this.threadPool = Executors.newCachedThreadPool();
         this.listMsgs = new ArrayBlockingQueue<>(50000);
+        this.timeSleep = timesl;
     }
 
     @Override
@@ -33,7 +35,7 @@ public class CaptureModule implements Runnable {
         Socket client = null;  
         
         Thread threadCapModuleInsert = null;                
-        CaptureModuleInsertDB capModule = new CaptureModuleInsertDB(this.listMsgs);
+        CaptureModuleInsertDB capModule = new CaptureModuleInsertDB(this.listMsgs, this.timeSleep);
         threadCapModuleInsert = new Thread(capModule);
         threadCapModuleInsert.start();
         
