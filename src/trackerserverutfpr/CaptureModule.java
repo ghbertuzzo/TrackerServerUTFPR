@@ -31,10 +31,12 @@ public class CaptureModule implements Runnable {
         }
         System.out.println("Starting the socket server at port:" + port);
         Socket client = null;  
-        /*Thread threadCapModuleInsert = null;                
+        
+        Thread threadCapModuleInsert = null;                
         CaptureModuleInsertDB capModule = new CaptureModuleInsertDB(this.listMsgs);
         threadCapModuleInsert = new Thread(capModule);
-        threadCapModuleInsert.start();*/
+        threadCapModuleInsert.start();
+        
         while (true) {  
             try {
                 client = this.serverSocket.accept();

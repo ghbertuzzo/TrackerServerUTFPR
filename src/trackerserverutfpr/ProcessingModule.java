@@ -30,28 +30,29 @@ public class ProcessingModule implements Runnable {
             //SELECT PARA PEGAR TODAS MSG NAO PROCESSSADAS
             ArrayList<TrackerST300> list = getMsgsInDB();
             
-            //CRIA POOL DE THREADS PARA PROCESSAR MSGS
             if(!list.isEmpty()){
+                
+                //CRIA POOL DE THREADS PARA PROCESSAR MSGS
                 PoolProcessingModule pool = new PoolProcessingModule(list, this.listMsgsProcessed);        
                 Thread threadPool = null;        
                 threadPool = new Thread(pool);
                 threadPool.start();
                 try {
-                    threadPool.join();  //AGUARDA PROCESSAR TUDO... SE RETIRAR O JOIN ENCAVALA...
+                    threadPool.join();
                 } catch (InterruptedException ex) {
                     Logger.getLogger(ProcessingModule.class.getName()).log(Level.SEVERE, null, ex);
                 }
+                
+                //REMOVE TODAS MENSAGENS PROCESSADAS DO ARRAY COMPARTILHADO
+                ArrayList<TrackerST300> listProcessed = removeMsgsProcessed();
+
+                //INSERE TODAS MENSAGENS PROCESSADAS NO BANCO E ATUALIZA MSGS NAO PROCESSADAS PARA PROCESSADAS
+                try {                      
+                    insertAndUpdateMsgsProcessed(listProcessed, list);
+                } catch (SQLException | ParseException ex) {
+                    Logger.getLogger(ProcessingModule.class.getName()).log(Level.SEVERE, null, ex);
+                }           
             }
-
-            //REMOVE TODAS MENSAGENS PROCESSADAS DO ARRAY COMPARTILHADO
-            ArrayList<TrackerST300> listProcessed = removeMsgsProcessed();
-
-            //INSERE TODAS MENSAGENS PROCESSADAS NO BANCO E ATUALIZA MSGS NAO PROCESSADAS PARA PROCESSADAS
-            try {                      
-                insertAndUpdateMsgsProcessed(listProcessed, list);
-            } catch (SQLException | ParseException ex) {
-                Logger.getLogger(ProcessingModule.class.getName()).log(Level.SEVERE, null, ex);
-            }            
             
             //ESPERA 1 SEG PARA REPETIR O CICLO
             try {
@@ -117,8 +118,8 @@ public class ProcessingModule implements Runnable {
                 }
                 ps2.executeBatch();
                 connection.commit();
+                System.out.println("Added all message processed in database");
             }
-            System.out.println("Added all message processed in database");
         }
     }
 }
