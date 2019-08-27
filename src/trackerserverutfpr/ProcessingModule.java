@@ -16,10 +16,12 @@ import java.util.logging.Logger;
 
 public class ProcessingModule implements Runnable {
 
-    public ArrayBlockingQueue<TrackerInterface> listMsgsProcessed;
+    public ArrayBlockingQueue<TrackerST300> listMsgsProcessed;
+    public int timeSleep;
     
-    public ProcessingModule() {        
+    public ProcessingModule(int time) {        
         this.listMsgsProcessed = new ArrayBlockingQueue<>(50000);   
+        this.timeSleep = time;
     }
     
     @Override
@@ -30,7 +32,7 @@ public class ProcessingModule implements Runnable {
             
             //CRIA POOL DE THREADS PARA PROCESSAR MSGS
             if(!list.isEmpty()){
-                Pool pool = new Pool(list, this.listMsgsProcessed);        
+                PoolProcessingModule pool = new PoolProcessingModule(list, this.listMsgsProcessed);        
                 Thread threadPool = null;        
                 threadPool = new Thread(pool);
                 threadPool.start();
@@ -42,25 +44,18 @@ public class ProcessingModule implements Runnable {
             }
 
             //REMOVE TODAS MENSAGENS PROCESSADAS DO ARRAY COMPARTILHADO
-            ArrayList<TrackerInterface> listProcessed = removeMsgsProcessed();
+            ArrayList<TrackerST300> listProcessed = removeMsgsProcessed();
 
-            //INSERE TODAS MENSAGENS PROCESSADAS NO BANCO
-            try {
-                insertMsgsProcessed(listProcessed);                      
+            //INSERE TODAS MENSAGENS PROCESSADAS NO BANCO E ATUALIZA MSGS NAO PROCESSADAS PARA PROCESSADAS
+            try {                      
+                insertAndUpdateMsgsProcessed(listProcessed, list);
             } catch (SQLException | ParseException ex) {
                 Logger.getLogger(ProcessingModule.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            
-            //UPDATE PROCESSED=TRUE PARA AS MENSAGENS PROCESSADAS
-            try {
-                updateMsgsProcessed(list);
-            } catch (SQLException ex) {
-                Logger.getLogger(ProcessingModule.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            }            
             
             //ESPERA 1 SEG PARA REPETIR O CICLO
             try {
-                sleep(1000);
+                sleep(this.timeSleep*1000);
             } catch (InterruptedException ex) {
                 Logger.getLogger(ProcessingModule.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -71,8 +66,8 @@ public class ProcessingModule implements Runnable {
         Thread.sleep(n);
     }
     
-    private ArrayList<TrackerInterface> removeMsgsProcessed() {
-        ArrayList<TrackerInterface> listForProcessed = new ArrayList<>();
+    private ArrayList<TrackerST300> removeMsgsProcessed() {
+        ArrayList<TrackerST300> listForProcessed = new ArrayList<>();
         this.listMsgsProcessed.drainTo(listForProcessed);
         return listForProcessed;
     }
@@ -96,13 +91,13 @@ public class ProcessingModule implements Runnable {
         return list;
     }
     
-    private void insertMsgsProcessed(ArrayList<TrackerInterface> list) throws SQLException, ParseException {
+    private void insertAndUpdateMsgsProcessed(ArrayList<TrackerST300> listProcessed, ArrayList<TrackerST300> list) throws SQLException, ParseException {
         if (!list.isEmpty()) {
             System.out.println("Size list msgs processed: " + list.size());            
             try (Connection connection = DriverManager.getConnection("jdbc:postgresql://172.17.0.3:5432/", "postgres", "utfsenha")) {
                 connection.setAutoCommit(false);
                 PreparedStatement ps = connection.prepareStatement("INSERT INTO message_processed (tracker_id, time, latitude, longitude) VALUES (?, ?, ?, ?)");
-                for (TrackerInterface tracker : list) {
+                for (TrackerInterface tracker : listProcessed) {
                     Calendar c = Calendar.getInstance();
                     SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
                     c.setTime(format.parse(tracker.getDateTime()));
@@ -115,25 +110,15 @@ public class ProcessingModule implements Runnable {
                     ps.addBatch();
                 }
                 ps.executeBatch();
+                PreparedStatement ps2 = connection.prepareStatement("UPDATE message_received set processed=true where number_id=?");
+                for (TrackerST300 tracker : list) {
+                    ps2.setInt(1, Integer.parseInt(tracker.getIdDB()));
+                    ps2.addBatch();
+                }
+                ps2.executeBatch();
                 connection.commit();
             }
             System.out.println("Added all message processed in database");
         }
-    }
-    
-    private void updateMsgsProcessed(ArrayList<TrackerST300> list) throws SQLException {
-        if(!list.isEmpty()){
-            try (Connection connection = DriverManager.getConnection("jdbc:postgresql://172.17.0.3:5432/", "postgres", "utfsenha")) {
-                connection.setAutoCommit(false);
-                PreparedStatement ps = connection.prepareStatement("UPDATE message_received set processed=true where number_id=?");
-                for (TrackerST300 tracker : list) {
-                    ps.setInt(1, Integer.parseInt(tracker.getIdDB()));
-                    ps.addBatch();
-                }
-                ps.executeBatch();
-                connection.commit();
-            }
-            System.out.println("Updated all msg processed");
-        }        
     }
 }

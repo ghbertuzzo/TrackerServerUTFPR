@@ -6,7 +6,7 @@ import java.util.logging.Logger;
 
 public class TrackerST300 implements TrackerInterface, Runnable {
 
-    public ArrayBlockingQueue<TrackerInterface> msgsProcessed;
+    public ArrayBlockingQueue<TrackerST300> msgsProcessed;
     public String msgcomplet;
     public String datetime;
     public String latitude;
@@ -18,7 +18,7 @@ public class TrackerST300 implements TrackerInterface, Runnable {
     private String distance;
     private String idDB;
 
-    public TrackerST300(String msg, ArrayBlockingQueue<TrackerInterface> msgsProcessed, String id) {
+    public TrackerST300(String msg, ArrayBlockingQueue<TrackerST300> msgsProcessed, String id) {
         this.msgcomplet = msg;
         this.msgsProcessed = msgsProcessed;
         this.idDB = id;
