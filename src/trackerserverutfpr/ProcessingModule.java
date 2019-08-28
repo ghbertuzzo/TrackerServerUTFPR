@@ -32,6 +32,7 @@ public class ProcessingModule implements Runnable {
         int cicle = 0;
         int sizeSelect = 0;
         int sizeProcessed = 0;
+        long startTime,endTime;
         FileWriter fw = null;
         try {
             fw = new FileWriter("/home/Giovani/2019/TCC2/TrackerServerUTFPR/src/log.txt",true);
@@ -41,7 +42,7 @@ public class ProcessingModule implements Runnable {
         BufferedWriter bw = new BufferedWriter(fw);        
         while (true) {
             cicle++;
-            long startTime = System.currentTimeMillis();
+            startTime = System.currentTimeMillis();
             //SELECT PARA PEGAR TODAS MSG NAO PROCESSSADAS
             ArrayList<TrackerST300> list = getMsgsInDB();
             sizeSelect = list.size();
@@ -69,16 +70,15 @@ public class ProcessingModule implements Runnable {
                     Logger.getLogger(ProcessingModule.class.getName()).log(Level.SEVERE, null, ex);
                 }           
             }            
-            long endTime = System.currentTimeMillis();            
+            endTime = System.currentTimeMillis();            
             try {
-                //System.out.println(cicle+";"+startTime+";"+endTime+";"+sizeSelect+";"+sizeProcessed);
                 bw.newLine();
-                bw.write(cicle+";"+startTime+";"+endTime+";"+sizeSelect+";"+sizeProcessed);
+                bw.write(cicle+";"+(endTime-startTime)+";"+sizeSelect+";"+sizeProcessed);
                 bw.flush();
             } catch (IOException ex) {
                 Logger.getLogger(ProcessingModule.class.getName()).log(Level.SEVERE, null, ex);
             }           
-            
+            sizeProcessed = 0;
             //ESPERA 1 SEG PARA REPETIR O CICLO
             try {
                 sleep(this.timeSleep*1000);
