@@ -1,5 +1,8 @@
 package trackerserverutfpr;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -26,10 +29,22 @@ public class ProcessingModule implements Runnable {
     
     @Override
     public void run() {
+        int cicle = 0;
+        int sizeSelect = 0;
+        int sizeProcessed = 0;
+        FileWriter fw = null;
+        try {
+            fw = new FileWriter("src/log.txt",true);
+        } catch (IOException ex) {
+            Logger.getLogger(ProcessingModule.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        BufferedWriter bw = new BufferedWriter(fw);        
         while (true) {
+            cicle++;
+            long startTime = System.currentTimeMillis();
             //SELECT PARA PEGAR TODAS MSG NAO PROCESSSADAS
             ArrayList<TrackerST300> list = getMsgsInDB();
-            
+            sizeSelect = list.size();
             if(!list.isEmpty()){
                 
                 //CRIA POOL DE THREADS PARA PROCESSAR MSGS
@@ -48,12 +63,19 @@ public class ProcessingModule implements Runnable {
 
                 //INSERE TODAS MENSAGENS PROCESSADAS NO BANCO E ATUALIZA MSGS NAO PROCESSADAS PARA PROCESSADAS
                 try {                      
-                    insertAndUpdateMsgsProcessed(listProcessed, list);
+                    int[] retUpdate = insertAndUpdateMsgsProcessed(listProcessed, list);
+                    sizeProcessed = retUpdate.length;
                 } catch (SQLException | ParseException ex) {
                     Logger.getLogger(ProcessingModule.class.getName()).log(Level.SEVERE, null, ex);
                 }           
+            }            
+            long endTime = System.currentTimeMillis();
+            //System.out.println(cicle+";"+startTime+";"+endTime+";"+sizeSelect+";"+sizeProcessed);
+            try {
+                bw.write(cicle+";"+startTime+";"+endTime+";"+sizeSelect+";"+sizeProcessed);
+            } catch (IOException ex) {
+                Logger.getLogger(ProcessingModule.class.getName()).log(Level.SEVERE, null, ex);
             }
-            
             //ESPERA 1 SEG PARA REPETIR O CICLO
             try {
                 sleep(this.timeSleep*1000);
@@ -92,7 +114,8 @@ public class ProcessingModule implements Runnable {
         return list;
     }
     
-    private void insertAndUpdateMsgsProcessed(ArrayList<TrackerST300> listProcessed, ArrayList<TrackerST300> list) throws SQLException, ParseException {        
+    private int[] insertAndUpdateMsgsProcessed(ArrayList<TrackerST300> listProcessed, ArrayList<TrackerST300> list) throws SQLException, ParseException {        
+        int[] retUpdate;
         System.out.println("Size list msgs processed: " + listProcessed.size());            
         System.out.println("Size list update: " + list.size());
         try (Connection connection = DriverManager.getConnection("jdbc:postgresql://172.17.0.3:5432/", "postgres", "utfsenha")) {
@@ -115,9 +138,10 @@ public class ProcessingModule implements Runnable {
                 ps2.setInt(1, Integer.parseInt(tracker.getIdDB()));
                 ps2.addBatch();
             }
-            int[] retUpdate = ps2.executeBatch();
+            retUpdate = ps2.executeBatch();
             connection.commit();                
             System.out.println("Size Insert: "+retInsert.length+"\nSize Update: "+retUpdate.length);
-        }        
+        }
+        return retUpdate;
     }
 }
