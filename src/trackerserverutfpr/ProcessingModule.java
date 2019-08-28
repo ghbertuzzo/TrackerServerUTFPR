@@ -34,7 +34,7 @@ public class ProcessingModule implements Runnable {
         int sizeProcessed = 0;
         FileWriter fw = null;
         try {
-            fw = new FileWriter("src/log.txt",true);
+            fw = new FileWriter("/home/Giovani/2019/TCC2/TrackerServerUTFPR/src/log.txt",true);
         } catch (IOException ex) {
             Logger.getLogger(ProcessingModule.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -69,13 +69,16 @@ public class ProcessingModule implements Runnable {
                     Logger.getLogger(ProcessingModule.class.getName()).log(Level.SEVERE, null, ex);
                 }           
             }            
-            long endTime = System.currentTimeMillis();
-            //System.out.println(cicle+";"+startTime+";"+endTime+";"+sizeSelect+";"+sizeProcessed);
+            long endTime = System.currentTimeMillis();            
             try {
+                //System.out.println(cicle+";"+startTime+";"+endTime+";"+sizeSelect+";"+sizeProcessed);
+                bw.newLine();
                 bw.write(cicle+";"+startTime+";"+endTime+";"+sizeSelect+";"+sizeProcessed);
+                bw.flush();
             } catch (IOException ex) {
                 Logger.getLogger(ProcessingModule.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            }           
+            
             //ESPERA 1 SEG PARA REPETIR O CICLO
             try {
                 sleep(this.timeSleep*1000);
