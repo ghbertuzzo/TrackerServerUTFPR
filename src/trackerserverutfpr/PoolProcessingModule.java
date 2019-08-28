@@ -18,8 +18,8 @@ public class PoolProcessingModule implements Runnable {
 
     @Override
     public void run() {
-        threadPool = Executors.newFixedThreadPool(4);
-        //threadPool = Executors.newCachedThreadPool();
+        //threadPool = Executors.newFixedThreadPool(4);
+        threadPool = Executors.newCachedThreadPool();
         createThreads(list, threadPool, msgsProcessed);
     }
     
