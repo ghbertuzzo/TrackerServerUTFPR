@@ -19,7 +19,6 @@ public class ThreadTracker implements Runnable {
 
     @Override
     public void run() {
-        System.out.println("New Client Started!");
         Scanner entrada = null;
         try {
             entrada = new Scanner(this.client.getInputStream());

@@ -1,5 +1,8 @@
 package trackerserverutfpr;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -21,15 +24,41 @@ public class CaptureModuleInsertDB implements Runnable {
     
     @Override
     public void run() {
+        int cicle = 0;
+        int sizeArray = 0;
+        int[] sizeInsert = null;
+        int retInsert = 0;
+        long startTime,endTime;
+        FileWriter fw = null;
+        try {
+            fw = new FileWriter("/home/Giovani/2019/TCC2/TrackerServerUTFPR/src/log-cap.txt",true);
+        } catch (IOException ex) {
+            Logger.getLogger(ProcessingModule.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        BufferedWriter bw = new BufferedWriter(fw);  
         while(true){
+            cicle++;
+            startTime = System.currentTimeMillis();
             if(!this.listMsgs.isEmpty()){
                 ArrayList<String> array = removeMsgs();
+                sizeArray = array.size();
                 try {
-                    insertMsgs(array);
+                    sizeInsert = insertMsgs(array);
+                    retInsert = sizeInsert.length;
                 } catch (SQLException ex) {
                     Logger.getLogger(CaptureModuleInsertDB.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
+            endTime = System.currentTimeMillis();
+            try {
+                bw.newLine();
+                bw.write(cicle+";"+(endTime-startTime)+";"+sizeArray+";"+retInsert);
+                bw.flush();
+            } catch (IOException ex) {
+                Logger.getLogger(CaptureModuleInsertDB.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            sizeArray = 0;
+            retInsert = 0;
             try {
                 sleep(1000*this.timeSleep);
             } catch (InterruptedException ex) {
@@ -47,7 +76,8 @@ public class CaptureModuleInsertDB implements Runnable {
         return list;
     }
     
-    private void insertMsgs(ArrayList<String> list) throws SQLException{
+    private int[] insertMsgs(ArrayList<String> list) throws SQLException{
+        int[] retInsert = null;
         if (!list.isEmpty()) {
             System.out.println("Size list not processed: " + list.size());
             try (Connection connection = DriverManager.getConnection("jdbc:postgresql://172.17.0.3:5432/", "postgres", "utfsenha")) {
@@ -58,10 +88,11 @@ public class CaptureModuleInsertDB implements Runnable {
                     ps.setBoolean(2, false);
                     ps.addBatch();
                 }
-                ps.executeBatch();
+                retInsert = ps.executeBatch();
                 connection.commit();
             }
         }
+        return retInsert;
     }
     
 }

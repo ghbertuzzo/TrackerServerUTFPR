@@ -14,17 +14,21 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ProcessingModule implements Runnable {
 
     public ArrayBlockingQueue<TrackerST300> listMsgsProcessed;
+    ExecutorService threadPool;
     public int timeSleep;
     
     public ProcessingModule(int time) {        
         this.listMsgsProcessed = new ArrayBlockingQueue<>(50000);   
         this.timeSleep = time;
+        this.threadPool = Executors.newCachedThreadPool();      
     }
     
     @Override
@@ -39,7 +43,7 @@ public class ProcessingModule implements Runnable {
         } catch (IOException ex) {
             Logger.getLogger(ProcessingModule.class.getName()).log(Level.SEVERE, null, ex);
         }
-        BufferedWriter bw = new BufferedWriter(fw);        
+        BufferedWriter bw = new BufferedWriter(fw);  
         while (true) {
             cicle++;
             startTime = System.currentTimeMillis();
@@ -47,17 +51,8 @@ public class ProcessingModule implements Runnable {
             ArrayList<TrackerST300> list = getMsgsInDB();
             sizeSelect = list.size();
             if(!list.isEmpty()){
-                
-                //CRIA POOL DE THREADS PARA PROCESSAR MSGS
-                PoolProcessingModule pool = new PoolProcessingModule(list, this.listMsgsProcessed);        
-                Thread threadPool = null;        
-                threadPool = new Thread(pool);
-                threadPool.start();
-                try {
-                    threadPool.join();
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(ProcessingModule.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                //PROCESSA MENSAGENS NO POOL
+                processInPool(list,threadPool,listMsgsProcessed);
                 
                 //REMOVE TODAS MENSAGENS PROCESSADAS DO ARRAY COMPARTILHADO
                 ArrayList<TrackerST300> listProcessed = removeMsgsProcessed();
@@ -86,6 +81,13 @@ public class ProcessingModule implements Runnable {
                 Logger.getLogger(ProcessingModule.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+    }
+    
+    private void processInPool(ArrayList<TrackerST300> list, ExecutorService threadPool, ArrayBlockingQueue msgsProcessed) {
+        list.forEach((track) -> {
+            TrackerST300 tracker = new TrackerST300(track.getMsgcomplet(), msgsProcessed,track.getIdDB());
+            threadPool.execute(tracker);
+        });
     }
     
     private void sleep(int n) throws InterruptedException{
