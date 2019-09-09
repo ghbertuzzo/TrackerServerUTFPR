@@ -51,6 +51,13 @@ public class ProcessingModule implements Runnable {
             ArrayList<TrackerST300> list = getMsgsInDB();
             sizeSelect = list.size();
             if(!list.isEmpty()){
+                //UPDATE PARA ESTADO PROCESSANDO (processed=2)
+                try {
+                    updateToProcess(list);
+                } catch (SQLException ex) {
+                    Logger.getLogger(ProcessingModule.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                
                 //PROCESSA MENSAGENS NO POOL
                 processInPool(list,threadPool,listMsgsProcessed);
                 
@@ -103,7 +110,7 @@ public class ProcessingModule implements Runnable {
     private ArrayList<TrackerST300> getMsgsInDB() {
         ArrayList<TrackerST300> list = new ArrayList<>();
         try (Connection connection = DriverManager.getConnection("jdbc:postgresql://172.17.0.3:5432/", "postgres", "utfsenha")){
-            PreparedStatement st = connection.prepareStatement("SELECT number_id, content FROM message_received WHERE processed=false");
+            PreparedStatement st = connection.prepareStatement("SELECT number_id, content FROM message_received WHERE processed=0");
             ResultSet rs = st.executeQuery();
             while (rs.next()){
                 String id = rs.getString("number_id");
@@ -125,7 +132,7 @@ public class ProcessingModule implements Runnable {
         System.out.println("Size list update: " + list.size());
         try (Connection connection = DriverManager.getConnection("jdbc:postgresql://172.17.0.3:5432/", "postgres", "utfsenha")) {
             connection.setAutoCommit(false);
-            PreparedStatement ps = connection.prepareStatement("INSERT INTO message_processed (tracker_id, time, latitude, longitude) VALUES (?, ?, ?, ?)");
+            PreparedStatement ps = connection.prepareStatement("INSERT INTO message_processed (tracker_id, time, latitude, longitude, time_receive) VALUES (?, ?, ?, ?, ?)");
             for (TrackerInterface tracker : listProcessed) {
                 Calendar c = Calendar.getInstance();
                 SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
@@ -135,10 +142,14 @@ public class ProcessingModule implements Runnable {
                 ps.setTimestamp(2, stamp);
                 ps.setString(3, tracker.getLatitude());
                 ps.setString(4, tracker.getLongitude());
+                Calendar calendar = Calendar.getInstance();
+                java.util.Date now = calendar.getTime();
+                java.sql.Timestamp currentTimestamp = new java.sql.Timestamp(now.getTime());                   
+                ps.setTimestamp(5, currentTimestamp);
                 ps.addBatch();
             }
             int[] retInsert = ps.executeBatch();
-            PreparedStatement ps2 = connection.prepareStatement("UPDATE message_received set processed=true where number_id=?");
+            PreparedStatement ps2 = connection.prepareStatement("UPDATE message_received set processed=1 where number_id=?");
             for (TrackerST300 tracker : list) {
                 ps2.setInt(1, Integer.parseInt(tracker.getIdDB()));
                 ps2.addBatch();
@@ -148,5 +159,18 @@ public class ProcessingModule implements Runnable {
             System.out.println("Size Insert: "+retInsert.length+"\nSize Update: "+retUpdate.length);
         }
         return retUpdate;
+    }
+
+    private void updateToProcess(ArrayList<TrackerST300> list) throws SQLException {
+        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://172.17.0.3:5432/", "postgres", "utfsenha")) {
+            connection.setAutoCommit(false);
+            PreparedStatement ps = connection.prepareStatement("UPDATE message_received set processed=2 where number_id=?");
+            for (TrackerST300 tracker : list) {
+                ps.setInt(1, Integer.parseInt(tracker.getIdDB()));
+                ps.addBatch();
+            }
+            ps.executeBatch();
+            connection.commit();        
+        }
     }
 }

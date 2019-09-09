@@ -7,7 +7,11 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -82,10 +86,14 @@ public class CaptureModuleInsertDB implements Runnable {
             System.out.println("Size list not processed: " + list.size());
             try (Connection connection = DriverManager.getConnection("jdbc:postgresql://172.17.0.3:5432/", "postgres", "utfsenha")) {
                 connection.setAutoCommit(false);
-                PreparedStatement ps = connection.prepareStatement("INSERT INTO message_received (content, processed) VALUES (?, ?)");
+                PreparedStatement ps = connection.prepareStatement("INSERT INTO message_received (content, processed, time) VALUES (?, ?, ?)");
                 for (String msgs : list) {
                     ps.setString(1, msgs);
-                    ps.setBoolean(2, false);
+                    ps.setInt(2, 0);                    
+                    Calendar calendar = Calendar.getInstance();
+                    java.util.Date now = calendar.getTime();
+                    java.sql.Timestamp currentTimestamp = new java.sql.Timestamp(now.getTime());                   
+                    ps.setTimestamp(3, currentTimestamp);
                     ps.addBatch();
                 }
                 retInsert = ps.executeBatch();
