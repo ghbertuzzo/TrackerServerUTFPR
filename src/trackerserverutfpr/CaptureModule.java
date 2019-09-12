@@ -16,7 +16,7 @@ public class CaptureModule implements Runnable {
     public ExecutorService threadPool;
     public ArrayBlockingQueue<String> listMsgs;
     public int timeSleep;
-    
+
     public CaptureModule(int port, int timesl) {
         this.port = port;
         this.threadPool = Executors.newCachedThreadPool();
@@ -26,20 +26,20 @@ public class CaptureModule implements Runnable {
 
     @Override
     public void run() {
-        try {        
+        try {
             this.serverSocket = new ServerSocket(port);
         } catch (IOException ex) {
             Logger.getLogger(CaptureModule.class.getName()).log(Level.SEVERE, null, ex);
         }
         System.out.println("Starting the socket server at port:" + port);
-        Socket client = null;  
-        
-        Thread threadCapModuleInsert = null;                
+        Socket client = null;
+
+        Thread threadCapModuleInsert = null;
         CaptureModuleInsertDB capModule = new CaptureModuleInsertDB(this.listMsgs, this.timeSleep);
         threadCapModuleInsert = new Thread(capModule);
         threadCapModuleInsert.start();
-        
-        while (true) {  
+
+        while (true) {
             try {
                 client = this.serverSocket.accept();
             } catch (IOException ex) {
@@ -48,5 +48,5 @@ public class CaptureModule implements Runnable {
             this.threadPool.execute(new ThreadTracker(client, listMsgs));
         }
     }
-    
+
 }

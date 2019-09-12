@@ -67,7 +67,7 @@ public class TrackerST300 implements TrackerInterface, Runnable {
     public String getDistance() {
         return this.distance;
     }
-    
+
     public String getIdDB() {
         return this.idDB;
     }
@@ -79,7 +79,6 @@ public class TrackerST300 implements TrackerInterface, Runnable {
     public void setMsgcomplet(String msgcomplet) {
         this.msgcomplet = msgcomplet;
     }
-    
 
     public static String processDateTime(String date, String time) {
         //;20190219;18:13:23;
@@ -200,7 +199,7 @@ public class TrackerST300 implements TrackerInterface, Runnable {
         }
         if (processed) {
             TrackerST300 tracker = new TrackerST300(this.idtracker, this.datetime, this.latitude, this.longitude, this.idDB);
-            try {                
+            try {
                 this.msgsProcessed.put(tracker);
             } catch (InterruptedException ex) {
                 Logger.getLogger(TrackerST300.class.getName()).log(Level.SEVERE, null, ex);
