@@ -116,8 +116,6 @@ public class ProcessingModule implements Runnable {
 
     private int[] insertAndUpdateMsgsProcessed(ArrayList<TrackerST300> listProcessed, ArrayList<TrackerST300> list) throws SQLException, ParseException {
         int[] retUpdate;
-        System.out.println("Size list msgs processed: " + listProcessed.size());
-        System.out.println("Size list update: " + list.size());
         try (Connection connection = DriverManager.getConnection("jdbc:postgresql://172.17.0.3:5432/", "postgres", "utfsenha")) {
             connection.setAutoCommit(false);
             PreparedStatement ps = connection.prepareStatement("INSERT INTO message_processed (tracker_id, time, latitude, longitude, time_receive) VALUES (?, ?, ?, ?, ?)");
