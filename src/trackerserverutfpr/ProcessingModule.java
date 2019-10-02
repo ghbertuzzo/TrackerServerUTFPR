@@ -61,7 +61,7 @@ public class ProcessingModule implements Runnable {
 
                 //INSERE TODAS MENSAGENS PROCESSADAS NO BANCO E ATUALIZA MSGS NAO PROCESSADAS PARA PROCESSADAS
                 try {
-                    int[] retUpdate = insertAndUpdateMsgsProcessed(listProcessed, list);
+                    int[] retUpdate = insertAndUpdateMsgsProcessed(listProcessed);
                     sizeProcessed = retUpdate.length;
                 } catch (SQLException | ParseException ex) {
                     Logger.getLogger(ProcessingModule.class.getName()).log(Level.SEVERE, null, ex);
@@ -114,7 +114,7 @@ public class ProcessingModule implements Runnable {
         return list;
     }
 
-    private int[] insertAndUpdateMsgsProcessed(ArrayList<TrackerST300> listProcessed, ArrayList<TrackerST300> list) throws SQLException, ParseException {
+    private int[] insertAndUpdateMsgsProcessed(ArrayList<TrackerST300> listProcessed) throws SQLException, ParseException {
         int[] retUpdate;
         try (Connection connection = DriverManager.getConnection("jdbc:postgresql://172.17.0.3:5432/", "postgres", "utfsenha")) {
             connection.setAutoCommit(false);
@@ -136,7 +136,7 @@ public class ProcessingModule implements Runnable {
             }
             int[] retInsert = ps.executeBatch();
             PreparedStatement ps2 = connection.prepareStatement("UPDATE message_received set processed=1 where number_id=?");
-            for (TrackerST300 tracker : list) {
+            for (TrackerST300 tracker : listProcessed) {
                 ps2.setInt(1, Integer.parseInt(tracker.getIdDB()));
                 ps2.addBatch();
             }
