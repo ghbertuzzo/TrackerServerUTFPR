@@ -28,7 +28,7 @@ public class ProcessingModule implements Runnable {
     public long startTime, endTime;
 
     public ProcessingModule(int time) {
-        this.listMsgsProcessed = new ArrayBlockingQueue<>(50000);
+        this.listMsgsProcessed = new ArrayBlockingQueue<>(100000);
         this.timeSleep = time;
         this.threadPool = Executors.newCachedThreadPool();
         this.cicle = 0;
@@ -54,7 +54,7 @@ public class ProcessingModule implements Runnable {
                 }
 
                 //PROCESSA MENSAGENS NO POOL
-                processInPool(list, threadPool, listMsgsProcessed);
+                processInPool(list, threadPool);
 
                 //REMOVE TODAS MENSAGENS PROCESSADAS DO ARRAY COMPARTILHADO
                 ArrayList<TrackerST300> listProcessed = removeMsgsProcessed();
@@ -79,10 +79,9 @@ public class ProcessingModule implements Runnable {
         }
     }
 
-    private void processInPool(ArrayList<TrackerST300> list, ExecutorService threadPool, ArrayBlockingQueue msgsProcessed) {
+    private void processInPool(ArrayList<TrackerST300> list, ExecutorService threadPool) {
         list.forEach((track) -> {
-            TrackerST300 tracker = new TrackerST300(track.getMsgcomplet(), msgsProcessed, track.getIdDB());
-            threadPool.execute(tracker);
+            threadPool.execute(track);
         });
     }
 
