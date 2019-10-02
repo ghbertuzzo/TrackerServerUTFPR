@@ -142,7 +142,7 @@ public class ProcessingModule implements Runnable {
             }
             retUpdate = ps2.executeBatch();
             connection.commit();
-            System.out.println("Size Insert: " + retInsert.length + "\nSize Update: " + retUpdate.length);
+            System.out.println("Processing Module: Size Insert: " + retInsert.length + " Size Update: " + retUpdate.length);
         }
         return retUpdate;
     }

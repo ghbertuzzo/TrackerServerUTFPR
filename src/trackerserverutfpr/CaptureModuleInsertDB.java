@@ -70,7 +70,6 @@ public class CaptureModuleInsertDB implements Runnable {
     private int[] insertMsgs(ArrayList<String> list) throws SQLException {
         int[] retornoInsert = null;
         if (!list.isEmpty()) {
-            System.out.println("Size list not processed: " + list.size());
             try (Connection connection = DriverManager.getConnection("jdbc:postgresql://172.17.0.3:5432/", "postgres", "utfsenha")) {
                 connection.setAutoCommit(false);
                 PreparedStatement ps = connection.prepareStatement("INSERT INTO message_received (content, processed, time) VALUES (?, ?, ?)");
@@ -84,6 +83,7 @@ public class CaptureModuleInsertDB implements Runnable {
                     ps.addBatch();
                 }
                 retornoInsert = ps.executeBatch();
+                System.out.println("Capture Module: Size list inserted: " + retornoInsert.length);
                 connection.commit();
             }
         }
