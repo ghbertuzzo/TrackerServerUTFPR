@@ -41,8 +41,10 @@ public class CaptureModule implements Runnable {
             } catch (IOException ex) {
                 Logger.getLogger(CaptureModule.class.getName()).log(Level.SEVERE, null, ex);
             }
+            Thread thread = null;
             ThreadTracker tt = new ThreadTracker(client, listMsgs);
-            tt.run();
+            thread = new Thread(tt);
+            thread.start();
         }
     }
 
