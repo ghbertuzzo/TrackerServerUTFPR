@@ -1,3 +1,7 @@
+/*
+Autor: Giovani Bertuzzo
+github.com/ghbertuzzo
+ */
 package trackerserverutfpr;
 
 import java.io.BufferedWriter;
@@ -14,15 +18,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ProcessingModule implements Runnable {
 
     public ArrayBlockingQueue<TrackerST300> listMsgsProcessed;
-    public ExecutorService threadPool;
     public int timeSleep;
     public int cicle, sizeSelect, sizeProcessed;
     public long startTime, endTime;
@@ -30,7 +31,6 @@ public class ProcessingModule implements Runnable {
     public ProcessingModule(int time) {
         this.listMsgsProcessed = new ArrayBlockingQueue<>(100000);
         this.timeSleep = time;
-        this.threadPool = Executors.newCachedThreadPool();
         this.cicle = 0;
         this.sizeSelect = 0;
         this.sizeProcessed = 0;
@@ -53,8 +53,8 @@ public class ProcessingModule implements Runnable {
                     Logger.getLogger(ProcessingModule.class.getName()).log(Level.SEVERE, null, ex);
                 }
 
-                //PROCESSA MENSAGENS NO POOL
-                processInPool(list, threadPool);
+                //PROCESSA MENSAGENS
+                processMsgs(list);
 
                 //REMOVE TODAS MENSAGENS PROCESSADAS DO ARRAY COMPARTILHADO
                 ArrayList<TrackerST300> listProcessed = removeMsgsProcessed();
@@ -79,9 +79,9 @@ public class ProcessingModule implements Runnable {
         }
     }
 
-    private void processInPool(ArrayList<TrackerST300> list, ExecutorService threadPool) {
+    private void processMsgs(ArrayList<TrackerST300> list) {
         list.forEach((track) -> {
-            threadPool.execute(track);
+            track.run();
         });
     }
 
